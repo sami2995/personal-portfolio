@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Samiyas Solomon — Full Stack Developer</title>
+  <meta name="description" content="Professional portfolio of Samiyas Solomon — a passionate Full Stack Developer specializing in modern web applications, React, Node.js, and more.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Ambient Glow Orbs -->
+  <div class="ambient-orb ambient-orb--purple"></div>
+  <div class="ambient-orb ambient-orb--cyan"></div>
+
+  <!-- Particle Canvas -->
+  <canvas id="particles-canvas"></canvas>
+
+  <!-- ============ NAVIGATION ============ -->
+  <nav class="nav" id="navbar">
+    <div class="container nav__inner">
+      <a href="#" class="nav__logo">Samiyas.</a>
+      <ul class="nav__links" id="nav-links">
+        <li><a href="#about" class="nav__link" data-nav>About</a></li>
+        <li><a href="#skills" class="nav__link" data-nav>Skills</a></li>
+        <li><a href="#projects" class="nav__link" data-nav>Projects</a></li>
+        <li><a href="#contact" class="nav__link" data-nav>Contact</a></li>
+      </ul>
+      <div class="nav__toggle" id="nav-toggle">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ============ HERO ============ -->
+  <section class="hero" id="hero">
+    <div class="container">
+      <div class="hero__content">
+        <div class="hero__text">
+          <p class="hero__greeting">👋 Hello, I'm</p>
+          <h1 class="hero__name">Samiyas <span>Solomon</span></h1>
+          <div class="hero__typewriter">
+            <span id="typewriter-text"></span><span class="cursor"></span>
+          </div>
+          <p class="hero__desc">A passionate Computer Science student building modern web experiences with clean code and creative design.</p>
+          <div class="hero__ctas">
+            <a href="#projects" class="btn btn--primary">
+              <i class="fa-solid fa-rocket"></i> View My Work
+            </a>
+            <a href="#contact" class="btn btn--outline">
+              <i class="fa-solid fa-envelope"></i> Get in Touch
+            </a>
+          </div>
+        </div>
+        <div class="hero__image">
+          <div class="hero__image-wrapper">
+            <img src="image/me.jpg" alt="Samiyas Solomon" class="hero__img" id="hero-img">
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ABOUT ============ -->
+  <section class="section" id="about">
+    <div class="container">
+      <div class="section__header reveal">
+        <p class="section__label">Get to Know Me</p>
+        <h2 class="section__title">About <span>Me</span></h2>
+        <div class="section__divider"></div>
+      </div>
+      <div class="about__grid">
+        <div class="about__image-card glass reveal">
+          <img src="image/me.jpg" alt="Samiyas Solomon" class="about__img">
+        </div>
+        <div class="reveal reveal-delay-2">
+          <div id="about-content">
+            <!-- Filled dynamically from API -->
+          </div>
+          <div class="about__stats">
+            <div class="stat glass">
+              <div class="stat__number" data-count="9">0</div>
+              <div class="stat__label">Projects</div>
+            </div>
+            <div class="stat glass">
+              <div class="stat__number" data-count="10">0</div>
+              <div class="stat__label">Technologies</div>
+            </div>
+            <div class="stat glass">
+              <div class="stat__number" data-count="2">0</div>
+              <div class="stat__label">Years Learning</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SKILLS ============ -->
+  <section class="section" id="skills">
+    <div class="container">
+      <div class="section__header reveal">
+        <p class="section__label">What I Work With</p>
+        <h2 class="section__title">My <span>Skills</span></h2>
+        <div class="section__divider"></div>
+      </div>
+      <div id="skills-content" class="skills__grid">
+        <!-- Filled dynamically from API -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PROJECTS ============ -->
+  <section class="section" id="projects">
+    <div class="container">
+      <div class="section__header reveal">
+        <p class="section__label">My Recent Work</p>
+        <h2 class="section__title">Project <span>Gallery</span></h2>
+        <div class="section__divider"></div>
+      </div>
+      <div id="projects-grid" class="projects__grid">
+        <!-- Filled dynamically from API -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ADMIN (hidden) ============ -->
+  <section id="admin">
+    <div class="container">
+      <!-- Login Form -->
+      <div id="admin-login" class="admin-card" style="max-width: 420px; margin: 0 auto;">
+        <h3 style="font-size: 1.4rem; font-weight: 700; margin-bottom: 20px;">🔐 Admin Login</h3>
+        <form id="login-form">
+          <div style="margin-bottom: 16px;">
+            <label for="login-username" class="form-label">Username</label>
+            <input type="text" id="login-username" class="form-control" required>
+          </div>
+          <div style="margin-bottom: 16px;">
+            <label for="login-password" class="form-label">Password</label>
+            <input type="password" id="login-password" class="form-control" required>
+          </div>
+          <button type="submit" class="btn-primary" style="width: 100%; padding: 12px; border-radius: 8px; font-size: 0.95rem; cursor: pointer; border: none; color: #fff; background: var(--accent-gradient); font-weight: 600;">Login</button>
+          <div id="login-error" style="color: #f87171; margin-top: 10px; display: none; font-size: 0.9rem;"></div>
+        </form>
+      </div>
+
+      <!-- Admin Panel -->
+      <div id="admin-panel" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px;">
+          <h2 style="font-size: 1.6rem; font-weight: 800;">Admin Panel</h2>
+          <button id="logout-btn" class="btn-outline-danger" style="padding: 8px 20px; border-radius: 8px; cursor: pointer;">Logout</button>
+        </div>
+        <p class="admin-help" style="margin-bottom: 28px;">
+          Manage your <strong>About Me</strong>, <strong>Skills</strong>, and <strong>Projects</strong>.
+          All changes are saved to the database.
+        </p>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+          <div class="admin-card">
+            <div class="admin-section-title">About Me</div>
+            <form id="about-form">
+              <div style="margin-bottom: 12px;">
+                <label for="about-text" class="form-label">About text</label>
+                <textarea id="about-text" class="form-control" rows="6" placeholder="Write a few paragraphs about yourself. Use a blank line between paragraphs."></textarea>
+              </div>
+              <button type="submit" class="btn-primary">Save About</button>
+              <span class="admin-help" style="margin-left: 8px;" id="about-status"></span>
+            </form>
+          </div>
+
+          <div class="admin-card">
+            <div class="admin-section-title">Skills</div>
+            <p class="admin-help" style="margin-bottom: 12px;">
+              Enter comma-separated skills for each category.
+            </p>
+            <form id="skills-form">
+              <div style="margin-bottom: 12px;">
+                <label for="skills-frontend" class="form-label">Frontend</label>
+                <input type="text" id="skills-frontend" class="form-control" placeholder="HTML, CSS, JavaScript, React">
+              </div>
+              <div style="margin-bottom: 12px;">
+                <label for="skills-backend" class="form-label">Backend</label>
+                <input type="text" id="skills-backend" class="form-control" placeholder="Node.js, Express.js, Django, PHP">
+              </div>
+              <div style="margin-bottom: 12px;">
+                <label for="skills-tools" class="form-label">Database &amp; Tools</label>
+                <input type="text" id="skills-tools" class="form-control" placeholder="SQL, PostgreSQL, MongoDB, Git, GitHub, VS Code">
+              </div>
+              <button type="submit" class="btn-primary">Save Skills</button>
+              <span class="admin-help" style="margin-left: 8px;" id="skills-status"></span>
+            </form>
+          </div>
+        </div>
+
+        <div class="admin-card" style="margin-top: 20px;">
+          <div class="admin-section-title" style="display: flex; justify-content: space-between; align-items: center;">
+            <span>Projects</span>
+            <span class="admin-help">Add, edit, or remove projects.</span>
+          </div>
+          <form id="project-form" style="margin-bottom: 20px;">
+            <input type="hidden" id="project-index" value="">
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
+              <div>
+                <label for="project-title" class="form-label">Title</label>
+                <input type="text" id="project-title" class="form-control" required>
+              </div>
+              <div>
+                <label for="project-image" class="form-label">Image path / URL</label>
+                <input type="text" id="project-image" class="form-control" placeholder="e.g. image/net.png or https://...">
+              </div>
+              <div>
+                <label for="project-link" class="form-label">Project link</label>
+                <input type="text" id="project-link" class="form-control" placeholder="https://...">
+              </div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px;">
+              <div>
+                <label for="project-link-label" class="form-label">Link button label</label>
+                <input type="text" id="project-link-label" class="form-control" placeholder="Visit Site, View Code, etc.">
+              </div>
+              <div>
+                <label for="project-description" class="form-label">Short description</label>
+                <textarea id="project-description" class="form-control" rows="2"></textarea>
+              </div>
+            </div>
+            <div style="margin-top: 12px;">
+              <button type="submit" class="btn-success" id="project-submit-btn">Add Project</button>
+              <button type="button" class="btn-secondary" id="project-cancel-btn" style="display: none; margin-left: 8px;">Cancel Edit</button>
+              <span class="admin-help" style="margin-left: 8px;" id="projects-status"></span>
+            </div>
+          </form>
+
+          <div style="overflow-x: auto;">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Title</th>
+                  <th>Link</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="projects-admin-table">
+                <!-- Filled dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CONTACT ============ -->
+  <section class="section" id="contact">
+    <div class="container">
+      <div class="section__header reveal">
+        <p class="section__label">Let's Connect</p>
+        <h2 class="section__title">Get in <span>Touch</span></h2>
+        <div class="section__divider"></div>
+      </div>
+      <div class="contact__grid">
+        <div class="contact__info reveal">
+          <h3>Let's build something great together.</h3>
+          <p>I'm always open to discussing new projects, creative ideas, or opportunities to be part of your vision.</p>
+          <div class="contact__detail">
+            <div class="contact__detail-icon">
+              <i class="fa-solid fa-location-dot"></i>
+            </div>
+            <div>
+              <div class="contact__detail-label">Location</div>
+              <div class="contact__detail-text">Ethiopia</div>
+            </div>
+          </div>
+          <div class="contact__detail">
+            <div class="contact__detail-icon">
+              <i class="fa-brands fa-github"></i>
+            </div>
+            <div>
+              <div class="contact__detail-label">GitHub</div>
+              <div class="contact__detail-text"><a href="https://github.com/sami2995" target="_blank" style="color: var(--accent-2);">github.com/sami2995</a></div>
+            </div>
+          </div>
+          <div class="contact__detail">
+            <div class="contact__detail-icon">
+              <i class="fa-brands fa-linkedin"></i>
+            </div>
+            <div>
+              <div class="contact__detail-label">LinkedIn</div>
+              <div class="contact__detail-text"><a href="https://www.linkedin.com/in/samiyas-solomon-8a70b5264/" target="_blank" style="color: var(--accent-2);">Samiyas Solomon</a></div>
+            </div>
+          </div>
+        </div>
+        <div class="contact__form-card glass reveal reveal-delay-2">
+          <form action="https://formsubmit.co/harydavido302@gmail.com" method="POST" id="contact-form">
+            <div class="form__group">
+              <label class="form__label" for="contact-name">Your Name</label>
+              <input type="text" name="name" id="contact-name" class="form__input" placeholder="John Doe" required>
+            </div>
+            <div class="form__group">
+              <label class="form__label" for="contact-email">Your Email</label>
+              <input type="email" name="email" id="contact-email" class="form__input" placeholder="john@example.com" required>
+            </div>
+            <div class="form__group">
+              <label class="form__label" for="contact-message">Message</label>
+              <textarea name="message" id="contact-message" class="form__textarea" placeholder="Tell me about your project..." required></textarea>
+            </div>
+            <button type="submit" class="btn btn--primary" style="width: 100%; justify-content: center;">
+              <i class="fa-solid fa-paper-plane"></i> Send Message
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="footer">
+    <div class="container footer__inner">
+      <div class="footer__socials">
+        <a href="https://github.com/sami2995" target="_blank" class="footer__social" aria-label="GitHub" id="footer-github">
+          <i class="fa-brands fa-github"></i>
+        </a>
+        <a href="https://www.linkedin.com/in/samiyas-solomon-8a70b5264/" target="_blank" class="footer__social" aria-label="LinkedIn" id="footer-linkedin">
+          <i class="fa-brands fa-linkedin-in"></i>
+        </a>
+      </div>
+      <p class="footer__copy">&copy; 2025 <span>Samiyas Solomon</span>. All rights reserved.</p>
+    </div>
+  </footer>
+  <script src="script.js"></script>
+</body>
+</html>
