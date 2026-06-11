@@ -35,7 +35,10 @@ if (!JWT_SECRET) {
 }
 
 if (missingEnvironmentVariables.length > 0) {
-  throw new Error(
+  // Do not throw during module import — in serverless environments
+  // we want the function to deploy so we can return a helpful error
+  // response instead of causing Vercel to mark the function as unavailable.
+  console.error(
     `Missing required environment variables: ${missingEnvironmentVariables.join(', ')}`
   );
 }
@@ -54,17 +57,37 @@ if (JWT_SECRET.length < 32) {
 |
 */
 
-const supabase = createClient(
-  SUPABASE_URL,
-  SUPABASE_SECRET_KEY,
-  {
-    auth: {
-      persistSession: false,
-      autoRefreshToken: false,
-      detectSessionInUrl: false
+// Only create the Supabase client when environment is present. If
+// required variables are missing, keep `supabase` null and respond
+// with 503 from API endpoints so Vercel can load the function.
+let supabase = null;
+const ENV_VALID = missingEnvironmentVariables.length === 0;
+
+if (ENV_VALID) {
+  supabase = createClient(
+    SUPABASE_URL,
+    SUPABASE_SECRET_KEY,
+    {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+        detectSessionInUrl: false
+      }
     }
+  );
+}
+
+// Middleware to return 503 if the service is misconfigured
+app.use('/api', (req, res, next) => {
+  if (!ENV_VALID) {
+    return res.status(503).json({
+      error: 'Server misconfigured',
+      missing: missingEnvironmentVariables
+    });
   }
-);
+
+  return next();
+});
 
 /*
 |--------------------------------------------------------------------------
