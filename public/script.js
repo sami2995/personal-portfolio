@@ -9,6 +9,17 @@
     const PARTICLE_COUNT = 60;
     const CONNECTION_DIST = 150;
 
+    const SUPABASE_URL =
+  'https://tnmrbwwenpspofladucp.supabase.co';
+
+const SUPABASE_PUBLISHABLE_KEY =
+  'sb_publishable_Bb0gSYSjgZijWpAVtrb1FA_aAnn_Q9C';
+
+const publicSupabase = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_PUBLISHABLE_KEY
+);
+
     function resizeCanvas() {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
@@ -324,24 +335,80 @@
     // PORTFOLIO DATA LOADING
     // ==========================================
     async function loadPortfolioData() {
-      try {
-        const data = await apiRequest('/api/portfolio');
+  const emptyPortfolio = {
+    about: [],
+    skills: {
+      frontend: [],
+      backend: [],
+      tools: []
+    },
+    projects: []
+  };
 
-        return {
-          about: Array.isArray(data.about) ? data.about : [],
-          skills: data.skills || { frontend: [], backend: [], tools: [] },
-          projects: Array.isArray(data.projects) ? data.projects : []
-        };
-      } catch (error) {
-        console.error('Failed to load portfolio API:', error);
+  try {
+    const [portfolioResult, projectsResult] =
+      await Promise.all([
+        publicSupabase
+          .from('portfolio_data')
+          .select('section, data')
+          .in('section', ['about', 'skills']),
 
-        return {
-          about: [],
-          skills: { frontend: [], backend: [], tools: [] },
-          projects: []
-        };
-      }
+        publicSupabase
+          .from('projects')
+          .select('*')
+          .order('display_order', {
+            ascending: true
+          })
+          .order('id', {
+            ascending: true
+          })
+      ]);
+
+    if (portfolioResult.error) {
+      throw portfolioResult.error;
     }
+
+    if (projectsResult.error) {
+      throw projectsResult.error;
+    }
+
+    const sections = {};
+
+    for (const row of portfolioResult.data || []) {
+      sections[row.section] = row.data;
+    }
+
+    return {
+      about: Array.isArray(sections.about)
+        ? sections.about
+        : [],
+
+      skills:
+        sections.skills &&
+        typeof sections.skills === 'object'
+          ? {
+              frontend:
+                sections.skills.frontend || [],
+              backend:
+                sections.skills.backend || [],
+              tools:
+                sections.skills.tools || []
+            }
+          : emptyPortfolio.skills,
+
+      projects: Array.isArray(projectsResult.data)
+        ? projectsResult.data
+        : []
+    };
+  } catch (error) {
+    console.error(
+      'Failed to load portfolio from Supabase:',
+      error
+    );
+
+    return emptyPortfolio;
+  }
+}
 
     async function loadAdminData() {
       try {
