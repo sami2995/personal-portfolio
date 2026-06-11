@@ -4,10 +4,10 @@
   "description": "Portfolio website with secure admin panel",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
+    "start": "node index.js",
     "setup": "node setup.js",
     "migrate": "node migrate-data.js",
-    "dev": "nodemon server.js"
+    "dev": "node --watch index.js"
   },
   "keywords": [
     "portfolio",
