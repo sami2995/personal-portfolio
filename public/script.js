@@ -248,12 +248,52 @@
 
     async function apiRequest(url, options = {}) {
       const token = getToken();
-      const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
-      if (token) headers['Authorization'] = `Bearer ${token}`;
 
-      const response = await fetch(`${API_BASE}${url}`, { ...options, headers });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'Request failed');
+      const headers = {
+        ...(options.body
+          ? { 'Content-Type': 'application/json' }
+          : {}),
+        ...(options.headers || {})
+      };
+
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+
+      const response = await fetch(
+        `${API_BASE}${url}`,
+        {
+          ...options,
+          headers
+        }
+      );
+
+      const responseText = await response.text();
+
+      let data = {};
+
+      if (responseText) {
+        try {
+          data = JSON.parse(responseText);
+        } catch {
+          console.error(
+            'Non-JSON server response:',
+            responseText
+          );
+
+          throw new Error(
+            `Server returned ${response.status}`
+          );
+        }
+      }
+
+      if (!response.ok) {
+        throw new Error(
+          data.error ||
+            `Request failed with status ${response.status}`
+        );
+      }
+
       return data;
     }
 
@@ -735,6 +775,88 @@
           } catch (error) {
             alert('Error deleting project: ' + error.message);
           }
+        }
+      });
+
+      const contactForm =
+        document.getElementById('contact-form');
+
+      const contactSubmitButton =
+        document.getElementById('contact-submit-btn');
+
+      const contactSubmitText =
+        document.getElementById('contact-submit-text');
+
+      const contactStatus =
+        document.getElementById('contact-status');
+
+      function showContactStatus(message, type) {
+        contactStatus.textContent = message;
+
+        contactStatus.classList.remove(
+          'contact-status--success',
+          'contact-status--error'
+        );
+
+        if (type === 'success') {
+          contactStatus.classList.add(
+            'contact-status--success'
+          );
+        }
+
+        if (type === 'error') {
+          contactStatus.classList.add(
+            'contact-status--error'
+          );
+        }
+      }
+
+      contactForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        showContactStatus('', '');
+
+        if (!contactForm.checkValidity()) {
+          contactForm.reportValidity();
+          return;
+        }
+
+        const formData = new FormData(contactForm);
+
+        const submission = {
+          name: String(formData.get('name') || '').trim(),
+          email: String(formData.get('email') || '').trim(),
+          subject: String(formData.get('subject') || '').trim(),
+          message: String(formData.get('message') || '').trim(),
+          website: String(formData.get('website') || '').trim()
+        };
+
+        contactSubmitButton.disabled = true;
+        contactSubmitText.textContent = 'Sending...';
+
+        try {
+          const response = await apiRequest('/api/contact', {
+            method: 'POST',
+            body: JSON.stringify(submission)
+          });
+
+          showContactStatus(
+            response.message || 'Message sent successfully!',
+            'success'
+          );
+
+          contactForm.reset();
+        } catch (error) {
+          console.error('Contact submission failed:', error);
+
+          showContactStatus(
+            error.message ||
+              'Unable to send your message. Please try again.',
+            'error'
+          );
+        } finally {
+          contactSubmitButton.disabled = false;
+          contactSubmitText.textContent = 'Send Message';
         }
       });
 

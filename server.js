@@ -12,6 +12,7 @@ const PORT = Number(process.env.PORT) || 3000;
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SECRET_KEY = process.env.SUPABASE_SECRET_KEY;
 const JWT_SECRET = process.env.JWT_SECRET;
+const rateLimit = require('express-rate-limit');
 
 /*
 |--------------------------------------------------------------------------
@@ -82,6 +83,16 @@ app.use(
 // Serves public/index.html and public/image locally.
 // Vercel also recognizes files placed inside public/.
 app.use(express.static(path.join(__dirname, 'public')));
+
+const contactLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    error: 'Too many messages submitted. Please try again later.'
+  }
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -659,6 +670,82 @@ app.delete(
     }
   }
 );
+
+app.post('/api/contact', contactLimiter, async (req, res) => {
+  const name = cleanString(req.body?.name, 100);
+  const email = cleanString(req.body?.email, 200);
+  const subject = cleanString(req.body?.subject, 200);
+  const message = cleanString(req.body?.message, 5000);
+
+  // Honeypot field: real users never fill this.
+  const website = cleanString(req.body?.website, 200);
+
+  if (website) {
+    // Return success so bots do not know they were blocked.
+    return res.status(201).json({
+      message: 'Message sent successfully'
+    });
+  }
+
+  if (!name || !email || !message) {
+    return res.status(400).json({
+      error: 'Name, email, and message are required'
+    });
+  }
+
+  if (name.length < 2) {
+    return res.status(400).json({
+      error: 'Please enter a valid name'
+    });
+  }
+
+  const emailPattern =
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  if (!emailPattern.test(email)) {
+    return res.status(400).json({
+      error: 'Please enter a valid email address'
+    });
+  }
+
+  if (message.length < 10) {
+    return res.status(400).json({
+      error: 'Message must contain at least 10 characters'
+    });
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from('contact_messages')
+      .insert({
+        name,
+        email: email.toLowerCase(),
+        subject,
+        message,
+        status: 'unread'
+      })
+      .select('id, created_at')
+      .single();
+
+    if (error) {
+      throw error;
+    }
+
+    return res.status(201).json({
+      message: 'Message sent successfully',
+      submission: {
+        id: data.id,
+        createdAt: data.created_at
+      }
+    });
+  } catch (error) {
+    logServerError('Contact form submission failed', error);
+
+    return res.status(500).json({
+      error: 'Unable to send your message right now'
+    });
+  }
+});
 
 /*
 |--------------------------------------------------------------------------

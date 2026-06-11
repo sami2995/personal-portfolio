@@ -297,23 +297,105 @@
           </div>
         </div>
         <div class="contact__form-card glass reveal reveal-delay-2">
-          <form action="https://formsubmit.co/harydavido302@gmail.com" method="POST" id="contact-form">
-            <div class="form__group">
-              <label class="form__label" for="contact-name">Your Name</label>
-              <input type="text" name="name" id="contact-name" class="form__input" placeholder="John Doe" required>
-            </div>
-            <div class="form__group">
-              <label class="form__label" for="contact-email">Your Email</label>
-              <input type="email" name="email" id="contact-email" class="form__input" placeholder="john@example.com" required>
-            </div>
-            <div class="form__group">
-              <label class="form__label" for="contact-message">Message</label>
-              <textarea name="message" id="contact-message" class="form__textarea" placeholder="Tell me about your project..." required></textarea>
-            </div>
-            <button type="submit" class="btn btn--primary" style="width: 100%; justify-content: center;">
-              <i class="fa-solid fa-paper-plane"></i> Send Message
-            </button>
-          </form>
+          <form id="contact-form" novalidate>
+  <div class="form__group">
+    <label class="form__label" for="contact-name">
+      Your Name
+    </label>
+
+    <input
+      type="text"
+      name="name"
+      id="contact-name"
+      class="form__input"
+      placeholder="John Doe"
+      minlength="2"
+      maxlength="100"
+      autocomplete="name"
+      required
+    >
+  </div>
+
+  <div class="form__group">
+    <label class="form__label" for="contact-email">
+      Your Email
+    </label>
+
+    <input
+      type="email"
+      name="email"
+      id="contact-email"
+      class="form__input"
+      placeholder="john@example.com"
+      maxlength="200"
+      autocomplete="email"
+      required
+    >
+  </div>
+
+  <div class="form__group">
+    <label class="form__label" for="contact-subject">
+      Subject
+    </label>
+
+    <input
+      type="text"
+      name="subject"
+      id="contact-subject"
+      class="form__input"
+      placeholder="Project opportunity"
+      maxlength="200"
+    >
+  </div>
+
+  <div class="form__group">
+    <label class="form__label" for="contact-message">
+      Message
+    </label>
+
+    <textarea
+      name="message"
+      id="contact-message"
+      class="form__textarea"
+      placeholder="Tell me about your project..."
+      minlength="10"
+      maxlength="5000"
+      required
+    ></textarea>
+  </div>
+
+  <!-- Spam honeypot: hidden from normal users -->
+  <div class="form-honeypot" aria-hidden="true">
+    <label for="contact-website">
+      Leave this field empty
+    </label>
+
+    <input
+      type="text"
+      name="website"
+      id="contact-website"
+      tabindex="-1"
+      autocomplete="off"
+    >
+  </div>
+
+  <button
+    type="submit"
+    class="btn btn--primary"
+    id="contact-submit-btn"
+    style="width: 100%; justify-content: center;"
+  >
+    <i class="fa-solid fa-paper-plane"></i>
+    <span id="contact-submit-text">Send Message</span>
+  </button>
+
+  <div
+    id="contact-status"
+    class="contact-status"
+    role="status"
+    aria-live="polite"
+  ></div>
+</form>
         </div>
       </div>
     </div>
