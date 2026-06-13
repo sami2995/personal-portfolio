@@ -32,6 +32,8 @@ if (!SUPABASE_SECRET_KEY) {
 
 if (!JWT_SECRET) {
   missingEnvironmentVariables.push('JWT_SECRET');
+} else if (JWT_SECRET.length < 32) {
+  missingEnvironmentVariables.push('JWT_SECRET (must be at least 32 characters long)');
 }
 
 if (missingEnvironmentVariables.length > 0) {
@@ -43,9 +45,9 @@ if (missingEnvironmentVariables.length > 0) {
   );
 }
 
-if (JWT_SECRET.length < 32) {
-  throw new Error('JWT_SECRET must be at least 32 characters long');
-}
+// Note: JWT_SECRET presence/length is validated above and surfaced via
+// the `/api` 503 middleware. We intentionally do NOT throw here, so the
+// serverless function still loads and can return a helpful error.
 
 /*
 |--------------------------------------------------------------------------
@@ -327,7 +329,7 @@ async function getAllProjects() {
 */
 
 // Health check
-app.get('/health', async (req, res) => {
+app.get('/api/health', async (req, res) => {
   try {
     const { error } = await supabase
       .from('portfolio_data')
@@ -353,7 +355,7 @@ app.get('/health', async (req, res) => {
 });
 
 // Get all public portfolio data
-app.get('/portfolio', async (req, res) => {
+app.get('/api/portfolio', async (req, res) => {
   try {
     const [about, skills, projects] = await Promise.all([
       getPortfolioData('about'),
@@ -385,7 +387,7 @@ app.get('/portfolio', async (req, res) => {
 |--------------------------------------------------------------------------
 */
 
-app.post('/admin/login', async (req, res) => {
+app.post('/api/admin/login', async (req, res) => {
   const username = cleanString(req.body?.username, 50);
   const password =
     typeof req.body?.password === 'string'
@@ -694,7 +696,7 @@ app.delete(
   }
 );
 
-app.post('/contact', contactLimiter, async (req, res) => {
+app.post('/api/contact', contactLimiter, async (req, res) => {
   const name = cleanString(req.body?.name, 100);
   const email = cleanString(req.body?.email, 200);
   const subject = cleanString(req.body?.subject, 200);
