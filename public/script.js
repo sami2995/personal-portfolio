@@ -9,16 +9,8 @@
     const PARTICLE_COUNT = 60;
     const CONNECTION_DIST = 150;
 
-    const SUPABASE_URL =
-  'https://tnmrbwwenpspofladucp.supabase.co';
-
-const SUPABASE_PUBLISHABLE_KEY =
-  'sb_publishable_Bb0gSYSjgZijWpAVtrb1FA_aAnn_Q9C';
-
-const publicSupabase = window.supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_PUBLISHABLE_KEY
-);
+    // Shared Supabase client (defined in supabase-client.js)
+    const db = window.appSupabase;
 
     function resizeCanvas() {
       canvas.width = window.innerWidth;
@@ -243,194 +235,61 @@ const publicSupabase = window.supabase.createClient(
     sections.forEach(s => sectionObserver.observe(s));
 
     // ==========================================
-    // API / AUTH HELPERS
-    // ==========================================
-    const API_BASE = '';
-
-    function getToken() {
-      return localStorage.getItem('portfolioToken');
-    }
-    function setToken(token) {
-      localStorage.setItem('portfolioToken', token);
-    }
-    function removeToken() {
-      localStorage.removeItem('portfolioToken');
-    }
-
-    async function apiRequest(url, options = {}) {
-      const token = getToken();
-
-      const headers = {
-        ...(options.body
-          ? { 'Content-Type': 'application/json' }
-          : {}),
-        ...(options.headers || {})
-      };
-
-      if (token) {
-        headers.Authorization = `Bearer ${token}`;
-      }
-
-      const response = await fetch(
-        `${API_BASE}${url}`,
-        {
-          ...options,
-          headers
-        }
-      );
-
-      const responseText = await response.text();
-
-      let data = {};
-
-      if (responseText) {
-        try {
-          data = JSON.parse(responseText);
-        } catch {
-          console.error(
-            'Non-JSON server response:',
-            responseText
-          );
-
-          throw new Error(
-            `Server returned ${response.status}`
-          );
-        }
-      }
-
-      if (!response.ok) {
-        throw new Error(
-          data.error ||
-            `Request failed with status ${response.status}`
-        );
-      }
-
-      return data;
-    }
-
-    function showLogin() {
-      document.getElementById('admin-login').style.display = 'block';
-      document.getElementById('admin-panel').style.display = 'none';
-    }
-
-    function showAdminPanel() {
-      document.getElementById('admin-login').style.display = 'none';
-      document.getElementById('admin-panel').style.display = 'block';
-    }
-
-    async function checkAuth() {
-      const token = getToken();
-      if (!token) { showLogin(); return; }
-      try {
-        await apiRequest('/api/admin/verify');
-        showAdminPanel();
-        await loadAdminData();
-      } catch {
-        removeToken();
-        showLogin();
-      }
-    }
-
-    // ==========================================
-    // PORTFOLIO DATA LOADING
+    // PORTFOLIO DATA LOADING (Supabase)
     // ==========================================
     async function loadPortfolioData() {
-  const emptyPortfolio = {
-    about: [],
-    skills: {
-      frontend: [],
-      backend: [],
-      tools: []
-    },
-    projects: []
-  };
+      const emptyPortfolio = {
+        about: [],
+        skills: { frontend: [], backend: [], tools: [] },
+        projects: []
+      };
 
-  try {
-    const [portfolioResult, projectsResult] =
-      await Promise.all([
-        publicSupabase
-          .from('portfolio_data')
-          .select('section, data')
-          .in('section', ['about', 'skills']),
+      if (!db) {
+        console.error('[v0] Supabase client unavailable.');
+        return emptyPortfolio;
+      }
 
-        publicSupabase
-          .from('projects')
-          .select('*')
-          .order('display_order', {
-            ascending: true
-          })
-          .order('id', {
-            ascending: true
-          })
-      ]);
-
-    if (portfolioResult.error) {
-      throw portfolioResult.error;
-    }
-
-    if (projectsResult.error) {
-      throw projectsResult.error;
-    }
-
-    const sections = {};
-
-    for (const row of portfolioResult.data || []) {
-      sections[row.section] = row.data;
-    }
-
-    return {
-      about: Array.isArray(sections.about)
-        ? sections.about
-        : [],
-
-      skills:
-        sections.skills &&
-        typeof sections.skills === 'object'
-          ? {
-              frontend:
-                sections.skills.frontend || [],
-              backend:
-                sections.skills.backend || [],
-              tools:
-                sections.skills.tools || []
-            }
-          : emptyPortfolio.skills,
-
-      projects: Array.isArray(projectsResult.data)
-        ? projectsResult.data
-        : []
-    };
-  } catch (error) {
-    console.error(
-      'Failed to load portfolio from Supabase:',
-      error
-    );
-
-    return emptyPortfolio;
-  }
-}
-
-    async function loadAdminData() {
       try {
-        const data = await apiRequest('/api/portfolio');
-        const aboutText = document.getElementById('about-text');
-        if (aboutText && data.about) {
-          aboutText.value = Array.isArray(data.about) ? data.about.join('\n\n') : '';
+        const [portfolioResult, projectsResult] = await Promise.all([
+          db
+            .from('portfolio_data')
+            .select('section, data')
+            .in('section', ['about', 'skills']),
+          db
+            .from('projects')
+            .select('*')
+            .order('display_order', { ascending: true })
+            .order('id', { ascending: true })
+        ]);
+
+        if (portfolioResult.error) throw portfolioResult.error;
+        if (projectsResult.error) throw projectsResult.error;
+
+        const sectionsData = {};
+        for (const row of portfolioResult.data || []) {
+          sectionsData[row.section] = row.data;
         }
-        if (data.skills) {
-          document.getElementById('skills-frontend').value = (data.skills.frontend || []).join(', ');
-          document.getElementById('skills-backend').value = (data.skills.backend || []).join(', ');
-          document.getElementById('skills-tools').value = (data.skills.tools || []).join(', ');
-        }
-        const projects = await apiRequest('/api/admin/projects');
-        renderProjectsAdminTable(projects);
+
+        return {
+          about: Array.isArray(sectionsData.about) ? sectionsData.about : [],
+          skills:
+            sectionsData.skills && typeof sectionsData.skills === 'object'
+              ? {
+                  frontend: sectionsData.skills.frontend || [],
+                  backend: sectionsData.skills.backend || [],
+                  tools: sectionsData.skills.tools || []
+                }
+              : emptyPortfolio.skills,
+          projects: Array.isArray(projectsResult.data) ? projectsResult.data : []
+        };
       } catch (error) {
-        console.error('Failed to load admin data:', error);
+        console.error('Failed to load portfolio from Supabase:', error);
+        return emptyPortfolio;
       }
     }
 
     // ==========================================
-    // SKILL PERCENTAGE MAP
+    // SKILL HELPERS
     // ==========================================
     function getSkillLevel(skill) {
       const map = {
@@ -466,7 +325,6 @@ const publicSupabase = window.supabase.createClient(
     // ==========================================
     function showEmptyState(container, message) {
       container.innerHTML = '';
-
       const empty = document.createElement('p');
       empty.className = 'empty-state';
       empty.textContent = message;
@@ -627,23 +485,73 @@ const publicSupabase = window.supabase.createClient(
       });
     }
 
-    function renderProjectsAdminTable(projects) {
-      const table = document.getElementById('projects-admin-table');
-      if (!table) return;
-      table.innerHTML = '';
+    // ==========================================
+    // CONTACT FORM (Supabase insert)
+    // ==========================================
+    function initContactForm() {
+      const contactForm = document.getElementById('contact-form');
+      if (!contactForm) return;
 
-      projects.forEach((project, index) => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${index + 1}</td>
-          <td>${project.title || ''}</td>
-          <td>${project.link ? '<span class="badge-pill bg-success-themed">Yes</span>' : '<span class="badge-pill bg-secondary-themed">No</span>'}</td>
-          <td>
-            <button class="btn-outline-primary" style="padding: 4px 12px; border-radius: 6px; cursor: pointer; margin-right: 6px;" data-action="edit" data-id="${project.id}">Edit</button>
-            <button class="btn-outline-danger" style="padding: 4px 12px; border-radius: 6px; cursor: pointer;" data-action="delete" data-id="${project.id}">Delete</button>
-          </td>
-        `;
-        table.appendChild(tr);
+      const contactSubmitButton = document.getElementById('contact-submit-btn');
+      const contactSubmitText = document.getElementById('contact-submit-text');
+      const contactStatus = document.getElementById('contact-status');
+
+      function showContactStatus(message, type) {
+        contactStatus.textContent = message;
+        contactStatus.classList.remove('contact-status--success', 'contact-status--error');
+        if (type === 'success') contactStatus.classList.add('contact-status--success');
+        if (type === 'error') contactStatus.classList.add('contact-status--error');
+      }
+
+      contactForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        showContactStatus('', '');
+
+        if (!contactForm.checkValidity()) {
+          contactForm.reportValidity();
+          return;
+        }
+
+        const formData = new FormData(contactForm);
+        const submission = {
+          name: String(formData.get('name') || '').trim(),
+          email: String(formData.get('email') || '').trim(),
+          subject: String(formData.get('subject') || '').trim(),
+          message: String(formData.get('message') || '').trim()
+        };
+        const honeypot = String(formData.get('website') || '').trim();
+
+        // Bot caught by honeypot: pretend success, do not insert.
+        if (honeypot) {
+          showContactStatus('Message sent successfully!', 'success');
+          contactForm.reset();
+          return;
+        }
+
+        contactSubmitButton.disabled = true;
+        contactSubmitText.textContent = 'Sending...';
+
+        try {
+          if (!db) throw new Error('Service unavailable. Please try again later.');
+
+          const { error } = await db
+            .from('contact_messages')
+            .insert([submission]);
+
+          if (error) throw error;
+
+          showContactStatus('Message sent successfully! I will get back to you soon.', 'success');
+          contactForm.reset();
+        } catch (error) {
+          console.error('Contact submission failed:', error);
+          showContactStatus(
+            error.message || 'Unable to send your message. Please try again.',
+            'error'
+          );
+        } finally {
+          contactSubmitButton.disabled = false;
+          contactSubmitText.textContent = 'Send Message';
+        }
       });
     }
 
@@ -666,277 +574,6 @@ const publicSupabase = window.supabase.createClient(
         projectCountEl.setAttribute('data-count', portfolioData.projects.length);
       }
 
-      await checkAuth();
-
-      // Login form
-      document.getElementById('login-form').addEventListener('submit', async function (e) {
-        e.preventDefault();
-        const username = document.getElementById('login-username').value;
-        const password = document.getElementById('login-password').value;
-        const errorDiv = document.getElementById('login-error');
-
-        try {
-          const response = await apiRequest('/api/admin/login', {
-            method: 'POST',
-            body: JSON.stringify({ username, password })
-          });
-          setToken(response.token);
-          showAdminPanel();
-          await loadAdminData();
-          errorDiv.style.display = 'none';
-        } catch (error) {
-          errorDiv.textContent = error.message || 'Login failed.';
-          errorDiv.style.display = 'block';
-        }
-      });
-
-      // Logout
-      document.getElementById('logout-btn').addEventListener('click', function () {
-        removeToken();
-        showLogin();
-      });
-
-      // About form
-      document.getElementById('about-form').addEventListener('submit', async function (e) {
-        e.preventDefault();
-        const raw = document.getElementById('about-text').value || '';
-        const paragraphs = raw.split(/\n{2,}/).map(p => p.trim()).filter(Boolean);
-        const status = document.getElementById('about-status');
-
-        try {
-          await apiRequest('/api/admin/about', {
-            method: 'PUT',
-            body: JSON.stringify({ about: paragraphs })
-          });
-          const data = await loadPortfolioData();
-          renderAbout(data.about, aboutContent);
-          status.textContent = 'Saved!';
-          status.style.color = '#34d399';
-          setTimeout(() => { status.textContent = ''; }, 2000);
-        } catch (error) {
-          status.textContent = 'Error: ' + error.message;
-          status.style.color = '#f87171';
-        }
-      });
-
-      // Skills form
-      document.getElementById('skills-form').addEventListener('submit', async function (e) {
-        e.preventDefault();
-        const parseSkills = (v) => v.split(',').map(s => s.trim()).filter(Boolean);
-        const skills = {
-          frontend: parseSkills(document.getElementById('skills-frontend').value),
-          backend: parseSkills(document.getElementById('skills-backend').value),
-          tools: parseSkills(document.getElementById('skills-tools').value)
-        };
-        const status = document.getElementById('skills-status');
-
-        try {
-          await apiRequest('/api/admin/skills', {
-            method: 'PUT',
-            body: JSON.stringify({ skills })
-          });
-          const data = await loadPortfolioData();
-          renderSkills(data.skills, skillsContent);
-          status.textContent = 'Saved!';
-          status.style.color = '#34d399';
-          setTimeout(() => { status.textContent = ''; }, 2000);
-        } catch (error) {
-          status.textContent = 'Error: ' + error.message;
-          status.style.color = '#f87171';
-        }
-      });
-
-      // Projects form
-      const projectForm = document.getElementById('project-form');
-      const projectIdInput = document.getElementById('project-index');
-      const projectSubmitBtn = document.getElementById('project-submit-btn');
-      const projectCancelBtn = document.getElementById('project-cancel-btn');
-
-      function resetProjectForm() {
-        projectIdInput.value = '';
-        projectForm.reset();
-        projectSubmitBtn.textContent = 'Add Project';
-        projectSubmitBtn.className = 'btn-success';
-        projectCancelBtn.style.display = 'none';
-      }
-
-      projectCancelBtn.addEventListener('click', resetProjectForm);
-
-      projectForm.addEventListener('submit', async function (e) {
-        e.preventDefault();
-        const project = {
-          title: document.getElementById('project-title').value.trim(),
-          image: document.getElementById('project-image').value.trim(),
-          link: document.getElementById('project-link').value.trim(),
-          link_label: document.getElementById('project-link-label').value.trim(),
-          description: document.getElementById('project-description').value.trim()
-        };
-
-        const projectId = projectIdInput.value;
-        const status = document.getElementById('projects-status');
-
-        try {
-          if (projectId) {
-            await apiRequest(`/api/admin/projects/${projectId}`, {
-              method: 'PUT',
-              body: JSON.stringify(project)
-            });
-          } else {
-            await apiRequest('/api/admin/projects', {
-              method: 'POST',
-              body: JSON.stringify(project)
-            });
-          }
-
-          const data = await loadPortfolioData();
-          renderProjects(data.projects, projectsGrid);
-          await loadAdminData();
-          status.textContent = projectId ? 'Project updated!' : 'Project added!';
-          status.style.color = '#34d399';
-          setTimeout(() => { status.textContent = ''; }, 2000);
-          resetProjectForm();
-        } catch (error) {
-          status.textContent = 'Error: ' + error.message;
-          status.style.color = '#f87171';
-        }
-      });
-
-      // Project table actions (edit / delete)
-      document.getElementById('projects-admin-table').addEventListener('click', async function (e) {
-        const target = e.target;
-        if (!(target instanceof HTMLElement)) return;
-        const action = target.getAttribute('data-action');
-        const projectId = target.getAttribute('data-id');
-        if (!projectId) return;
-
-        if (action === 'edit') {
-          try {
-            const projects = await apiRequest('/api/admin/projects');
-            const project = projects.find(p => p.id == projectId);
-            if (project) {
-              document.getElementById('project-title').value = project.title || '';
-              document.getElementById('project-image').value = project.image || '';
-              document.getElementById('project-link').value = project.link || '';
-              document.getElementById('project-link-label').value = project.link_label || '';
-              document.getElementById('project-description').value = project.description || '';
-              projectIdInput.value = String(project.id);
-              projectSubmitBtn.textContent = 'Update Project';
-              projectSubmitBtn.className = 'btn-primary';
-              projectCancelBtn.style.display = 'inline-block';
-            }
-          } catch (error) {
-            alert('Error loading project: ' + error.message);
-          }
-        } else if (action === 'delete') {
-          if (!confirm('Are you sure you want to delete this project?')) return;
-          try {
-            await apiRequest(`/api/admin/projects/${projectId}`, { method: 'DELETE' });
-            const data = await loadPortfolioData();
-            renderProjects(data.projects, projectsGrid);
-            await loadAdminData();
-            const status = document.getElementById('projects-status');
-            status.textContent = 'Project deleted.';
-            status.style.color = '#34d399';
-            setTimeout(() => { status.textContent = ''; }, 2000);
-            resetProjectForm();
-          } catch (error) {
-            alert('Error deleting project: ' + error.message);
-          }
-        }
-      });
-
-      const contactForm =
-        document.getElementById('contact-form');
-
-      const contactSubmitButton =
-        document.getElementById('contact-submit-btn');
-
-      const contactSubmitText =
-        document.getElementById('contact-submit-text');
-
-      const contactStatus =
-        document.getElementById('contact-status');
-
-      function showContactStatus(message, type) {
-        contactStatus.textContent = message;
-
-        contactStatus.classList.remove(
-          'contact-status--success',
-          'contact-status--error'
-        );
-
-        if (type === 'success') {
-          contactStatus.classList.add(
-            'contact-status--success'
-          );
-        }
-
-        if (type === 'error') {
-          contactStatus.classList.add(
-            'contact-status--error'
-          );
-        }
-      }
-
-      contactForm.addEventListener('submit', async (event) => {
-        event.preventDefault();
-
-        showContactStatus('', '');
-
-        if (!contactForm.checkValidity()) {
-          contactForm.reportValidity();
-          return;
-        }
-
-        const formData = new FormData(contactForm);
-
-        const submission = {
-          name: String(formData.get('name') || '').trim(),
-          email: String(formData.get('email') || '').trim(),
-          subject: String(formData.get('subject') || '').trim(),
-          message: String(formData.get('message') || '').trim(),
-          website: String(formData.get('website') || '').trim()
-        };
-
-        contactSubmitButton.disabled = true;
-        contactSubmitText.textContent = 'Sending...';
-
-        try {
-          const response = await apiRequest('/api/contact', {
-            method: 'POST',
-            body: JSON.stringify(submission)
-          });
-
-          showContactStatus(
-            response.message || 'Message sent successfully!',
-            'success'
-          );
-
-          contactForm.reset();
-        } catch (error) {
-          console.error('Contact submission failed:', error);
-
-          showContactStatus(
-            error.message ||
-              'Unable to send your message. Please try again.',
-            'error'
-          );
-        } finally {
-          contactSubmitButton.disabled = false;
-          contactSubmitText.textContent = 'Send Message';
-        }
-      });
-
-      // Admin shortcut: Ctrl+Shift+A
-      document.addEventListener('keydown', function (e) {
-        if (e.ctrlKey && e.shiftKey && (e.key === 'A' || e.key === 'a')) {
-          e.preventDefault();
-          const adminSection = document.getElementById('admin');
-          if (adminSection) {
-            adminSection.style.display = 'block';
-            adminSection.scrollIntoView({ behavior: 'smooth' });
-          }
-        }
-      });
+      initContactForm();
     });
   })();

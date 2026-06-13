@@ -130,132 +130,6 @@
     </div>
   </section>
 
-  <!-- ============ ADMIN (hidden) ============ -->
-  <section id="admin">
-    <div class="container">
-      <!-- Login Form -->
-      <div id="admin-login" class="admin-card" style="max-width: 420px; margin: 0 auto;">
-        <h3 style="font-size: 1.4rem; font-weight: 700; margin-bottom: 20px;">🔐 Admin Login</h3>
-        <form id="login-form">
-          <div style="margin-bottom: 16px;">
-            <label for="login-username" class="form-label">Username</label>
-            <input type="text" id="login-username" class="form-control" required>
-          </div>
-          <div style="margin-bottom: 16px;">
-            <label for="login-password" class="form-label">Password</label>
-            <input type="password" id="login-password" class="form-control" required>
-          </div>
-          <button type="submit" class="btn-primary" style="width: 100%; padding: 12px; border-radius: 8px; font-size: 0.95rem; cursor: pointer; border: none; color: #fff; background: var(--accent-gradient); font-weight: 600;">Login</button>
-          <div id="login-error" style="color: #f87171; margin-top: 10px; display: none; font-size: 0.9rem;"></div>
-        </form>
-      </div>
-
-      <!-- Admin Panel -->
-      <div id="admin-panel" style="display: none;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px;">
-          <h2 style="font-size: 1.6rem; font-weight: 800;">Admin Panel</h2>
-          <button id="logout-btn" class="btn-outline-danger" style="padding: 8px 20px; border-radius: 8px; cursor: pointer;">Logout</button>
-        </div>
-        <p class="admin-help" style="margin-bottom: 28px;">
-          Manage your <strong>About Me</strong>, <strong>Skills</strong>, and <strong>Projects</strong>.
-          All changes are saved to the database.
-        </p>
-
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-          <div class="admin-card">
-            <div class="admin-section-title">About Me</div>
-            <form id="about-form">
-              <div style="margin-bottom: 12px;">
-                <label for="about-text" class="form-label">About text</label>
-                <textarea id="about-text" class="form-control" rows="6" placeholder="Write a few paragraphs about yourself. Use a blank line between paragraphs."></textarea>
-              </div>
-              <button type="submit" class="btn-primary">Save About</button>
-              <span class="admin-help" style="margin-left: 8px;" id="about-status"></span>
-            </form>
-          </div>
-
-          <div class="admin-card">
-            <div class="admin-section-title">Skills</div>
-            <p class="admin-help" style="margin-bottom: 12px;">
-              Enter comma-separated skills for each category.
-            </p>
-            <form id="skills-form">
-              <div style="margin-bottom: 12px;">
-                <label for="skills-frontend" class="form-label">Frontend</label>
-                <input type="text" id="skills-frontend" class="form-control" placeholder="HTML, CSS, JavaScript, React">
-              </div>
-              <div style="margin-bottom: 12px;">
-                <label for="skills-backend" class="form-label">Backend</label>
-                <input type="text" id="skills-backend" class="form-control" placeholder="Node.js, Express.js, Django, PHP">
-              </div>
-              <div style="margin-bottom: 12px;">
-                <label for="skills-tools" class="form-label">Database &amp; Tools</label>
-                <input type="text" id="skills-tools" class="form-control" placeholder="SQL, PostgreSQL, MongoDB, Git, GitHub, VS Code">
-              </div>
-              <button type="submit" class="btn-primary">Save Skills</button>
-              <span class="admin-help" style="margin-left: 8px;" id="skills-status"></span>
-            </form>
-          </div>
-        </div>
-
-        <div class="admin-card" style="margin-top: 20px;">
-          <div class="admin-section-title" style="display: flex; justify-content: space-between; align-items: center;">
-            <span>Projects</span>
-            <span class="admin-help">Add, edit, or remove projects.</span>
-          </div>
-          <form id="project-form" style="margin-bottom: 20px;">
-            <input type="hidden" id="project-index" value="">
-            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
-              <div>
-                <label for="project-title" class="form-label">Title</label>
-                <input type="text" id="project-title" class="form-control" required>
-              </div>
-              <div>
-                <label for="project-image" class="form-label">Image path / URL</label>
-                <input type="text" id="project-image" class="form-control" placeholder="e.g. image/net.png or https://...">
-              </div>
-              <div>
-                <label for="project-link" class="form-label">Project link</label>
-                <input type="text" id="project-link" class="form-control" placeholder="https://...">
-              </div>
-            </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px;">
-              <div>
-                <label for="project-link-label" class="form-label">Link button label</label>
-                <input type="text" id="project-link-label" class="form-control" placeholder="Visit Site, View Code, etc.">
-              </div>
-              <div>
-                <label for="project-description" class="form-label">Short description</label>
-                <textarea id="project-description" class="form-control" rows="2"></textarea>
-              </div>
-            </div>
-            <div style="margin-top: 12px;">
-              <button type="submit" class="btn-success" id="project-submit-btn">Add Project</button>
-              <button type="button" class="btn-secondary" id="project-cancel-btn" style="display: none; margin-left: 8px;">Cancel Edit</button>
-              <span class="admin-help" style="margin-left: 8px;" id="projects-status"></span>
-            </div>
-          </form>
-
-          <div style="overflow-x: auto;">
-            <table class="table">
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Title</th>
-                  <th>Link</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody id="projects-admin-table">
-                <!-- Filled dynamically -->
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
   <!-- ============ CONTACT ============ -->
   <section class="section" id="contact">
     <div class="container">
@@ -416,6 +290,7 @@
     </div>
   </footer>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js"></script>
 <script src="script.js"></script>
 </body>
 </html>

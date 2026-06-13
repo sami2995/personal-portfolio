@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard — Samiyas Solomon</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="admin-body">
+
+  <!-- Ambient Glow Orbs -->
+  <div class="ambient-orb ambient-orb--purple"></div>
+  <div class="ambient-orb ambient-orb--cyan"></div>
+
+  <!-- Auth guard shows this until the session is confirmed -->
+  <div id="admin-loading" class="admin-loading">
+    <p><i class="fa-solid fa-spinner fa-spin"></i> Checking access...</p>
+  </div>
+
+  <main id="admin-shell" class="admin-shell" style="display: none;">
+    <div class="admin-topbar">
+      <h1 class="admin-topbar__title">Admin Dashboard</h1>
+      <div style="display: flex; gap: 10px; align-items: center;">
+        <a href="index.html" class="btn-secondary" style="text-decoration: none;">
+          <i class="fa-solid fa-eye"></i> View Site
+        </a>
+        <button id="logout-btn" class="btn-outline-danger">
+          <i class="fa-solid fa-right-from-bracket"></i> Logout
+        </button>
+      </div>
+    </div>
+    <p class="admin-topbar__sub" id="admin-user-line">
+      Manage your About, Skills, and Projects. Changes save directly to Supabase.
+    </p>
+
+    <div class="admin-grid">
+      <!-- About -->
+      <div class="admin-card">
+        <div class="admin-section-title">About Me</div>
+        <form id="about-form">
+          <div style="margin-bottom: 12px;">
+            <label for="about-text" class="form-label">About text</label>
+            <textarea id="about-text" class="form-control" rows="6" placeholder="Write a few paragraphs about yourself. Use a blank line between paragraphs."></textarea>
+          </div>
+          <button type="submit" class="btn-primary">Save About</button>
+          <span class="admin-status" id="about-status"></span>
+        </form>
+      </div>
+
+      <!-- Skills -->
+      <div class="admin-card">
+        <div class="admin-section-title">Skills</div>
+        <p class="admin-help" style="margin-bottom: 12px;">Enter comma-separated skills for each category.</p>
+        <form id="skills-form">
+          <div style="margin-bottom: 12px;">
+            <label for="skills-frontend" class="form-label">Frontend</label>
+            <input type="text" id="skills-frontend" class="form-control" placeholder="HTML, CSS, JavaScript, React">
+          </div>
+          <div style="margin-bottom: 12px;">
+            <label for="skills-backend" class="form-label">Backend</label>
+            <input type="text" id="skills-backend" class="form-control" placeholder="Node.js, Express.js, Django, PHP">
+          </div>
+          <div style="margin-bottom: 12px;">
+            <label for="skills-tools" class="form-label">Database &amp; Tools</label>
+            <input type="text" id="skills-tools" class="form-control" placeholder="SQL, PostgreSQL, MongoDB, Git, GitHub, VS Code">
+          </div>
+          <button type="submit" class="btn-primary">Save Skills</button>
+          <span class="admin-status" id="skills-status"></span>
+        </form>
+      </div>
+    </div>
+
+    <!-- Projects -->
+    <div class="admin-card" style="margin-top: 20px;">
+      <div class="admin-section-title" style="display: flex; justify-content: space-between; align-items: center;">
+        <span>Projects</span>
+        <span class="admin-help">Add, edit, or remove projects.</span>
+      </div>
+      <form id="project-form" style="margin-bottom: 20px;">
+        <input type="hidden" id="project-index" value="">
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
+          <div>
+            <label for="project-title" class="form-label">Title</label>
+            <input type="text" id="project-title" class="form-control" required>
+          </div>
+          <div>
+            <label for="project-image" class="form-label">Image path / URL</label>
+            <input type="text" id="project-image" class="form-control" placeholder="e.g. image/net.png or https://...">
+          </div>
+          <div>
+            <label for="project-link" class="form-label">Project link</label>
+            <input type="text" id="project-link" class="form-control" placeholder="https://...">
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px;">
+          <div>
+            <label for="project-link-label" class="form-label">Link button label</label>
+            <input type="text" id="project-link-label" class="form-control" placeholder="Visit Site, View Code, etc.">
+          </div>
+          <div>
+            <label for="project-description" class="form-label">Short description</label>
+            <textarea id="project-description" class="form-control" rows="2"></textarea>
+          </div>
+        </div>
+        <div style="margin-top: 12px;">
+          <button type="submit" class="btn-success" id="project-submit-btn">Add Project</button>
+          <button type="button" class="btn-secondary" id="project-cancel-btn" style="display: none; margin-left: 8px;">Cancel Edit</button>
+          <span class="admin-status" id="projects-status"></span>
+        </div>
+      </form>
+
+      <div style="overflow-x: auto;">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Title</th>
+              <th>Link</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="projects-admin-table">
+            <!-- Filled dynamically -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-client.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>
