@@ -327,7 +327,7 @@ async function getAllProjects() {
 */
 
 // Health check
-app.get('/api/health', async (req, res) => {
+app.get('/health', async (req, res) => {
   try {
     const { error } = await supabase
       .from('portfolio_data')
@@ -353,7 +353,7 @@ app.get('/api/health', async (req, res) => {
 });
 
 // Get all public portfolio data
-app.get('/api/portfolio', async (req, res) => {
+app.get('/portfolio', async (req, res) => {
   try {
     const [about, skills, projects] = await Promise.all([
       getPortfolioData('about'),
@@ -385,7 +385,7 @@ app.get('/api/portfolio', async (req, res) => {
 |--------------------------------------------------------------------------
 */
 
-app.post('/api/admin/login', async (req, res) => {
+app.post('/admin/login', async (req, res) => {
   const username = cleanString(req.body?.username, 50);
   const password =
     typeof req.body?.password === 'string'
@@ -694,7 +694,7 @@ app.delete(
   }
 );
 
-app.post('/api/contact', contactLimiter, async (req, res) => {
+app.post('/contact', contactLimiter, async (req, res) => {
   const name = cleanString(req.body?.name, 100);
   const email = cleanString(req.body?.email, 200);
   const subject = cleanString(req.body?.subject, 200);
